@@ -4,10 +4,15 @@ type Env = {
   guildId: string
   clientId: string
   modChannelId: string
+  verificationChannelId: string
+  roles: Roles
 }
 type FirestoreEnv = {
   projectId: string
   keyFilename: string
+}
+type Roles = {
+  verified: string
 }
 
 const devConfig: Env = {
@@ -19,6 +24,10 @@ const devConfig: Env = {
     keyFilename: Bun.env.DEV_FIRESTORE_KEY_FILENAME!,
   },
   modChannelId: Bun.env.DEV_MOD_CHANNEL_ID!,
+  verificationChannelId: Bun.env.DEV_VERIFICATION_CHANNEL_ID!,
+  roles: {
+    verified: Bun.env.DEV_VERIFIED_ROLE!,
+  },
 }
 
 const prodConfig: Env = {
@@ -30,6 +39,10 @@ const prodConfig: Env = {
     keyFilename: Bun.env.PROD_FIRESTORE_KEY_FILENAME!,
   },
   modChannelId: Bun.env.PROD_MOD_CHANNEL_ID!,
+  verificationChannelId: Bun.env.PROD_VERIFICATION_CHANNEL_ID!,
+  roles: {
+    verified: Bun.env.PROD_VERIFIED_ROLE!,
+  },
 }
 
 const env = Bun.env.NODE_ENV === 'production' ? prodConfig : devConfig
