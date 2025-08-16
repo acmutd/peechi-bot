@@ -8,7 +8,7 @@ import {
   SlashCommandBuilder,
 } from 'discord.js'
 import type { Command } from '../types'
-import env from '../utils/env'
+import getEnv from '../utils/env'
 
 export const verify: Command = {
   data: new SlashCommandBuilder()
@@ -16,7 +16,8 @@ export const verify: Command = {
     .setDescription('Insert verification button in verification channel')
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   execute: async interaction => {
-    const verificationChannel = await interaction.client.channels.fetch(env.verificationChannelId)
+    const env = getEnv()
+    const verificationChannel = await interaction.client.channels.fetch(env.CHANNELS.VERIFICATION)
     if (!verificationChannel?.isSendable()) {
       await interaction.reply({ content: 'Verification channel not found', flags: MessageFlags.Ephemeral })
       return

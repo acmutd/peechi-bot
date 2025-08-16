@@ -8,7 +8,7 @@ import {
 } from 'discord.js'
 import reportService from '../db/reportService'
 import { type ButtonCommand } from '../types'
-import env from '../utils/env'
+import getEnv from '../utils/env'
 
 const reportCategories = ['Offensive', 'Spam & Ads', 'Illegal or NSFW', 'Uncomfortable', 'Other']
 
@@ -120,7 +120,8 @@ export const report: ButtonCommand = {
       })
     }
 
-    const modChannel = await interaction.client.channels.fetch(env.modChannelId)
+    const env = getEnv()
+    const modChannel = await interaction.client.channels.fetch(env.CHANNELS.ADMIN)
     if (!modChannel?.isSendable()) {
       return
     }

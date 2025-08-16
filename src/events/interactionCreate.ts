@@ -36,8 +36,13 @@ async function handleContextMenu(interaction: BaseInteraction) {
     }
     Logger.info(`${interaction.user.username} used ${interaction.commandName}`)
   } catch (error) {
-    Logger.error('Error executing context menu:', error)
-
+    Logger.critical('Error executing context menu command', error, {
+      commandName: interaction.commandName,
+      userId: interaction.user.id,
+      username: interaction.user.username,
+      guildId: interaction.guildId,
+      channelId: interaction.channelId,
+    })
     const reply: InteractionReplyOptions = {
       content: 'There was an error while executing this context menu!',
       flags: MessageFlags.Ephemeral,
@@ -66,7 +71,14 @@ async function handleCommand(interaction: BaseInteraction) {
     await command.execute(interaction)
     Logger.info(`${interaction.user.username} used /${interaction.commandName}`)
   } catch (error) {
-    Logger.error('Error executing command:', error)
+    Logger.critical('Error executing slash command', error, {
+      commandName: interaction.commandName,
+      userId: interaction.user.id,
+      username: interaction.user.username,
+      guildId: interaction.guildId,
+      channelId: interaction.channelId,
+      options: interaction.options.data,
+    })
 
     const reply: InteractionReplyOptions = {
       content: 'There was an error while executing this command!',
@@ -96,7 +108,14 @@ async function handleButton(interaction: BaseInteraction) {
   try {
     await command.execute(interaction)
   } catch (error) {
-    Logger.error('Error executing button:', error)
+    Logger.critical('Error executing button interaction', error, {
+      customId: interaction.customId,
+      baseId,
+      userId: interaction.user.id,
+      username: interaction.user.username,
+      guildId: interaction.guildId,
+      channelId: interaction.channelId,
+    })
 
     const reply: InteractionReplyOptions = {
       content: 'There was an error while executing this button!',

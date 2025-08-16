@@ -1,6 +1,6 @@
 import { ActionRowBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js'
 import type { ButtonCommand } from '../types'
-import env from '../utils/env'
+import getEnv from '../utils/env'
 
 export const verify: ButtonCommand = {
   baseId: 'verify',
@@ -32,7 +32,8 @@ export const verify: ButtonCommand = {
       return
     }
 
-    const role = await interaction.guild?.roles.fetch(env.roles.verified)
+    const env = getEnv()
+    const role = await interaction.guild?.roles.fetch(env.ROLES.VERIFIED)
     if (!role) {
       await interaction.reply({ content: 'Verified role not found', flags: MessageFlags.Ephemeral })
       return
