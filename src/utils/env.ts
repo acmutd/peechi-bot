@@ -63,6 +63,12 @@ class EnvironmentService {
     }
     return this._env
   }
+
+  reinitialize(): Promise<Env> {
+    this._isInitialized = false
+    this._env = null
+    return this.initialize()
+  }
 }
 
 export const envService = new EnvironmentService()

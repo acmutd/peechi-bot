@@ -1,6 +1,8 @@
 import { ActionRowBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js'
 import type { ButtonCommand } from '../types'
 import getEnv from '../utils/env'
+import pointsService from '../db/pointsService'
+import { Logger } from '../utils/logger'
 
 export const verify: ButtonCommand = {
   baseId: 'verify',
@@ -39,9 +41,23 @@ export const verify: ButtonCommand = {
       return
     }
 
-    await member.setNickname(name)
-    await member.roles.add(role)
-    await res.editReply({ content: 'Verified' })
+    try {
+      const existingUser = await pointsService.getUser(user.id)
+      if (!existingUser) {
+        await pointsService.createUser(user.id, name, pronouns)
+        Logger.info(`Created new user during verification: ${name} (${user.id})`)
+      } else {
+        Logger.info(`User ${name} (${user.id}) already exists in database`)
+      }
+
+      await member.setNickname(name)
+      await member.roles.add(role)
+
+      await res.editReply({ content: 'Verified successfully! You can now start earning points by chatting.' })
+    } catch (error) {
+      Logger.error(`Error during verification for user ${user.id}:`, error)
+      await res.editReply({ content: 'Verification completed, but there was an issue setting up your profile. Please contact a moderator if you experience any issues.' })
+    }
   },
 }
 

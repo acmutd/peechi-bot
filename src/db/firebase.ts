@@ -1,6 +1,6 @@
 // src/services/firebase.ts
 import { initializeApp, cert, type ServiceAccount } from 'firebase-admin/app'
-import { getFirestore, Firestore } from 'firebase-admin/firestore'
+import { getFirestore, Firestore, initializeFirestore } from 'firebase-admin/firestore'
 import { readFileSync } from 'node:fs'
 import { localEnv, firebaseEnvSchema, type FirebaseEnv } from '../utils/env'
 
@@ -8,20 +8,19 @@ class FirebaseService {
   private db: Firestore
 
   constructor() {
-    this.initializeFirebase()
-    this.db = getFirestore()
+    const app = this.initializeFirebase()
+    this.db = initializeFirestore(app, { preferRest: true})
   }
 
   private initializeFirebase() {
     try {
       const serviceAccount = JSON.parse(readFileSync(localEnv.FIRESTORE_KEY_FILENAME, 'utf8')) as ServiceAccount
 
-      initializeApp({
+      return initializeApp({
         credential: cert(serviceAccount),
         projectId: localEnv.FIRESTORE_PROJECT_ID,
       })
 
-      console.log('Firebase initialized successfully')
     } catch (error) {
       console.error('Error initializing Firebase:', error)
       throw error

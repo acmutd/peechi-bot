@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url'
 import type { BotClient, ButtonCommand, Command, ContextMenuCommand } from '../types'
 import { Logger } from '../utils/logger'
 import { BOT_INTENTS } from '../constants/intents'
-import getEnv from '../utils/env'
+import getEnv, { localEnv } from '../utils/env'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -38,7 +38,8 @@ export class DiscordBot {
    * Load all slash commands from the commands directory
    */
   async loadCommands() {
-    const commandsPath = join(__dirname, '..', 'commands')
+    const path = localEnv.NODE_ENV === 'production' ? ['..', 'src'] : ['..']
+    const commandsPath = join(__dirname, ...path, 'commands')
     const commandFiles = readdirSync(commandsPath).filter(file => file.endsWith('.ts'))
 
     for (const file of commandFiles) {
@@ -64,7 +65,8 @@ export class DiscordBot {
    * Load all event handlers from the events directory
    */
   async loadEvents() {
-    const eventsPath = join(__dirname, '..', 'events')
+    const path = localEnv.NODE_ENV === 'production' ? ['..', 'src'] : ['..']
+    const eventsPath = join(__dirname, ...path, 'events')
     const eventFiles = readdirSync(eventsPath).filter(file => file.endsWith('.ts'))
 
     for (const file of eventFiles) {
@@ -89,7 +91,8 @@ export class DiscordBot {
    * Load all context menu commands from the ctx-menus directory
    */
   async loadContextMenus() {
-    const contextMenusPath = join(__dirname, '..', 'ctx-menus')
+    const path = localEnv.NODE_ENV === 'production' ? ['..', 'src'] : ['..']
+    const contextMenusPath = join(__dirname, ...path, 'ctx-menus')
 
     try {
       const contextMenuFiles = readdirSync(contextMenusPath).filter(
@@ -122,7 +125,7 @@ export class DiscordBot {
    * Load all button handlers from the buttons directory
    */
   async loadButtons() {
-    const buttonsPath = join(__dirname, '..', 'buttons')
+    const buttonsPath = localEnv.NODE_ENV === 'production' ? join(__dirname, '..', 'src', 'buttons') : join(__dirname, '..', 'buttons')
     const buttonFiles = readdirSync(buttonsPath).filter(file => file.endsWith('.ts'))
 
     for (const file of buttonFiles) {
