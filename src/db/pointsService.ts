@@ -1,7 +1,7 @@
 import { Firestore } from 'firebase-admin/firestore'
 import firebaseService from './firebase'
-import { userSchema, type User, type MessageHistory, type UserPointsUpdate } from '../types/users'
-import { isSimilarToRecentMessages, calculatePointsForMessage } from '../utils/similarity'
+import { userSchema, type User, type UserPointsUpdate } from '../types/users'
+import { calculatePointsForMessage } from '../utils/similarity'
 import { Logger } from '../utils/logger'
 
 export class PointsService {
@@ -33,7 +33,6 @@ export class PointsService {
       name,
       pronouns,
       points: 0,
-      lastMessages: [],
       lastUpdated: Date.now(),
     }
 
@@ -63,12 +62,6 @@ export class PointsService {
         }
 
         userData.points += update.pointsToAdd
-
-        userData.lastMessages.unshift(update.message)
-        if (userData.lastMessages.length > 5) {
-          userData.lastMessages = userData.lastMessages.slice(0, 5)
-        }
-
         userData.lastUpdated = Date.now()
 
         transaction.set(userRef, userData)
@@ -94,13 +87,6 @@ export class PointsService {
         user = await this.createUser(userId, userName)
       }
 
-      if (isSimilarToRecentMessages(messageContent, user.lastMessages)) {
-        return {
-          pointsAwarded: 0,
-          reason: 'Message too similar to recent messages'
-        }
-      }
-
       const pointsToAdd = calculatePointsForMessage(messageContent)
 
       if (pointsToAdd === 0) {
@@ -110,22 +96,15 @@ export class PointsService {
         }
       }
 
-      const messageHistory: MessageHistory = {
-        content: messageContent,
-        timestamp: Date.now(),
-        channelId
-      }
-
       const success = await this.updateUserPoints({
         userId,
-        pointsToAdd,
-        message: messageHistory
+        pointsToAdd
       })
 
       if (success) {
         return {
           pointsAwarded: pointsToAdd,
-          reason: `Awarded ${pointsToAdd} points for unique message`
+          reason: `Awarded ${pointsToAdd} points for message`
         }
       } else {
         return {
