@@ -18,6 +18,8 @@ export const verify: Command = {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   execute: async interaction => {
     try {
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral })
+
       const env = await getEnv()
       const verificationChannel = await interaction.client.channels.fetch(env.CHANNELS.VERIFICATION)
       if (!verificationChannel?.isSendable()) {
@@ -43,10 +45,10 @@ export const verify: Command = {
       const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(button)
 
       await verificationChannel.send({ embeds: [embed], components: [actionRow] })
-      await interaction.reply({ content: 'Verification button inserted', flags: MessageFlags.Ephemeral })
+      await interaction.editReply({ content: 'Verification button inserted' })
     } catch (error) {
       Logger.error('Error in verify command:', error)
-      await interaction.reply({ content: 'An error occurred while setting up verification', flags: MessageFlags.Ephemeral })
+      await interaction.editReply({ content: 'An error occurred while setting up verification' })
     }
   },
 }
