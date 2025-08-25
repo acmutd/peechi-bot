@@ -48,9 +48,32 @@ export class PointsService {
 
   async updateUserPoints(update: UserPointsUpdate): Promise<boolean> {
     try {
+      // Validate input
+      if (!update.userId || typeof update.userId !== 'string') {
+        Logger.error('Invalid userId provided to updateUserPoints')
+        return false
+      }
+
+      if (typeof update.pointsToAdd !== 'number' || isNaN(update.pointsToAdd)) {
+        Logger.error('Invalid pointsToAdd provided to updateUserPoints')
+        return false
+      }
+
+      // Prevent negative points (unless explicitly allowed)
+      if (update.pointsToAdd < 0) {
+        Logger.warn(`Attempted to add negative points (${update.pointsToAdd}) for user ${update.userId}`)
+        return false
+      }
+
+      // Prevent extremely large point values that could cause issues
+      if (update.pointsToAdd > 1000000) {
+        Logger.warn(`Attempted to add excessive points (${update.pointsToAdd}) for user ${update.userId}`)
+        return false
+      }
+
       const userRef = this.db.collection('users').doc(update.userId)
 
-      await this.db.runTransaction(async (transaction) => {
+      const result = await this.db.runTransaction(async (transaction) => {
         const userDoc = await transaction.get(userRef)
 
         let userData: User
@@ -58,17 +81,32 @@ export class PointsService {
           Logger.warn(`Attempted to update points for non-existent user: ${update.userId}`)
           return false
         } else {
-          userData = userSchema.parse(userDoc.data())
+          try {
+            userData = userSchema.parse(userDoc.data())
+          } catch (parseError) {
+            Logger.error(`Invalid user data format for user ${update.userId}:`, parseError)
+            return false
+          }
         }
 
-        userData.points += update.pointsToAdd
+        // Prevent integer overflow
+        const newPoints = userData.points + update.pointsToAdd
+        if (newPoints > Number.MAX_SAFE_INTEGER) {
+          Logger.warn(`Point update would cause overflow for user ${update.userId}`)
+          return false
+        }
+
+        userData.points = newPoints
         userData.lastUpdated = Date.now()
 
         transaction.set(userRef, userData)
+        return true
       })
 
-      Logger.info(`Updated user ${update.userId}: +${update.pointsToAdd} points`)
-      return true
+      if (result) {
+        Logger.info(`Updated user ${update.userId}: +${update.pointsToAdd} points`)
+      }
+      return result
     } catch (error) {
       Logger.error(`Error updating points for user ${update.userId}:`, error)
       return false
@@ -82,9 +120,39 @@ export class PointsService {
     channelId: string
   ): Promise<{ pointsAwarded: number; reason: string }> {
     try {
+      // Validate inputs
+      if (!userId || typeof userId !== 'string') {
+        return {
+          pointsAwarded: 0,
+          reason: 'Invalid user ID'
+        }
+      }
+
+      if (!userName || typeof userName !== 'string') {
+        return {
+          pointsAwarded: 0,
+          reason: 'Invalid user name'
+        }
+      }
+
+      if (!messageContent || typeof messageContent !== 'string') {
+        return {
+          pointsAwarded: 0,
+          reason: 'Invalid message content'
+        }
+      }
+
       let user = await this.getUser(userId)
       if (!user) {
-        user = await this.createUser(userId, userName)
+        try {
+          user = await this.createUser(userId, userName)
+        } catch (createError) {
+          Logger.error(`Failed to create user ${userId}:`, createError)
+          return {
+            pointsAwarded: 0,
+            reason: 'Failed to create user profile'
+          }
+        }
       }
 
       const pointsToAdd = calculatePointsForMessage(messageContent)
@@ -128,6 +196,19 @@ export class PointsService {
 
   async getLeaderboard(limit: number = 10): Promise<User[]> {
     try {
+      // Validate and sanitize limit
+      if (typeof limit !== 'number' || isNaN(limit)) {
+        Logger.warn('Invalid limit provided to getLeaderboard, using default')
+        limit = 10
+      }
+
+      // Ensure limit is within reasonable bounds
+      if (limit <= 0) {
+        limit = 10
+      } else if (limit > 100) {
+        limit = 100
+      }
+
       const snapshot = await this.db
         .collection('users')
         .orderBy('points', 'desc')

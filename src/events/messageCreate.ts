@@ -1,21 +1,28 @@
 import { Events, Message } from 'discord.js'
-import firebaseService from '../db/firebase'
 import pointsService from '../db/pointsService'
 import { Logger } from '../utils/logger'
 
 export const name = Events.MessageCreate
 
 export async function execute(message: Message) {
-  // Ignore bot messages
-  if (message.author.bot) return
-
-  // Ignore messages without content (embeds, attachments only, etc.)
-  if (!message.content || message.content.trim().length === 0) return
-
-  // Ignore system messages
-  if (message.system) return
-
   try {
+    // Ignore bot messages
+    if (message.author.bot) return
+
+    // Ignore messages without content (embeds, attachments only, etc.)
+    if (!message.content || message.content.trim().length === 0) return
+
+    // Ignore system messages
+    if (message.system) return
+
+    // Ignore deleted messages
+    if (!message.deletable) return
+
+    if (!message.author || !message.author.id || !message.channel) {
+      Logger.warn('Message missing required properties')
+      return
+    }
+
     // Process the message for points
     const result = await pointsService.processMessage(
       message.author.id,

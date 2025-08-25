@@ -33,12 +33,23 @@ export const localEnv = localEnvSchema.parse(Bun.env)
 class EnvironmentService {
   private _env: Env | null = null
   private _isInitialized = false
+  private _initializationPromise: Promise<Env> | null = null
 
   async initialize(): Promise<Env> {
     if (this._isInitialized && this._env) {
       return this._env
     }
 
+    // If initialization is already in progress, return the same promise
+    if (this._initializationPromise) {
+      return this._initializationPromise
+    }
+
+    this._initializationPromise = this._doInitialize()
+    return this._initializationPromise
+  }
+
+  private async _doInitialize(): Promise<Env> {
     try {
       // Import Firebase service dynamically to avoid circular dependencies
       const { default: firebaseService } = await import('../db/firebase')
@@ -50,29 +61,35 @@ class EnvironmentService {
       }
 
       this._isInitialized = true
+      this._initializationPromise = null // Clear the promise
       return this._env
     } catch (error) {
+      this._initializationPromise = null // Clear the promise so retry is possible
       console.error('Failed to initialize environment service:', error)
       throw new Error('Environment initialization failed')
     }
   }
 
-  getEnv(): Env {
-    if (!this._isInitialized || !this._env) {
-      throw new Error('Environment service not initialized. Call initialize() first.')
+
+  async getEnv(): Promise<Env> {
+    if (this._isInitialized && this._env) {
+      return this._env
     }
-    return this._env
+
+    // Try to initialize if not already done
+    return await this.initialize()
   }
 
   reinitialize(): Promise<Env> {
     this._isInitialized = false
     this._env = null
+    this._initializationPromise = null
     return this.initialize()
   }
 }
 
 export const envService = new EnvironmentService()
 
-export default function getEnv(): Env {
+export async function getEnv(): Promise<Env> {
   return envService.getEnv()
 }

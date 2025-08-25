@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url'
 import type { BotClient, ButtonCommand, Command, ContextMenuCommand } from '../types'
 import { Logger } from '../utils/logger'
 import { BOT_INTENTS } from '../constants/intents'
-import getEnv, { localEnv } from '../utils/env'
+import { getEnv, localEnv } from '../utils/env'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -155,7 +155,7 @@ export class DiscordBot {
     const contextMenuData = Array.from(this.contextMenuCommands.values()).map(contextMenu => contextMenu.data.toJSON())
     const allCommands = [...commandData, ...contextMenuData]
 
-    const env = getEnv()
+    const env = await getEnv()
     const rest = new REST().setToken(env.DISCORD_TOKEN)
 
     try {
@@ -190,7 +190,7 @@ export class DiscordBot {
 
       await this.deployCommands()
 
-      const env = getEnv()
+      const env = await getEnv()
       await this.client.login(env.DISCORD_TOKEN)
 
       // Graceful shutdown handling

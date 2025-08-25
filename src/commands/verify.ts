@@ -8,7 +8,8 @@ import {
   SlashCommandBuilder,
 } from 'discord.js'
 import type { Command } from '../types'
-import getEnv from '../utils/env'
+import { getEnv } from '../utils/env'
+import { Logger } from '../utils/logger'
 
 export const verify: Command = {
   data: new SlashCommandBuilder()
@@ -16,24 +17,37 @@ export const verify: Command = {
     .setDescription('Insert verification button in verification channel')
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
   execute: async interaction => {
-    const env = getEnv()
-    const verificationChannel = await interaction.client.channels.fetch(env.CHANNELS.VERIFICATION)
-    if (!verificationChannel?.isSendable()) {
-      await interaction.reply({ content: 'Verification channel not found', flags: MessageFlags.Ephemeral })
-      return
+    try {
+      const env = await getEnv()
+      const verificationChannel = await interaction.client.channels.fetch(env.CHANNELS.VERIFICATION)
+      if (!verificationChannel?.isSendable()) {
+        await interaction.reply({ content: 'Verification channel not found or bot cannot send messages there', flags: MessageFlags.Ephemeral })
+        return
+      }
+
+      try {
+        const messages = await verificationChannel.messages.fetch({ limit: 100 })
+        for (const message of messages.values()) {
+          try {
+            await message.delete()
+          } catch (error) {
+            Logger.warn('Failed to delete message:', error)
+          }
+        }
+      } catch (error) {
+        Logger.warn('Failed to fetch messages for cleanup:', error)
+      }
+
+      const embed = VerificationEmbed()
+      const button = VerificationButton()
+      const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(button)
+
+      await verificationChannel.send({ embeds: [embed], components: [actionRow] })
+      await interaction.reply({ content: 'Verification button inserted', flags: MessageFlags.Ephemeral })
+    } catch (error) {
+      Logger.error('Error in verify command:', error)
+      await interaction.reply({ content: 'An error occurred while setting up verification', flags: MessageFlags.Ephemeral })
     }
-
-    const messages = await verificationChannel.messages.fetch({ limit: 100 })
-    for (const message of messages.values()) {
-      await message.delete()
-    }
-
-    const embed = VerificationEmbed()
-    const button = VerificationButton()
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(button)
-
-    await verificationChannel.send({ embeds: [embed], components: [actionRow] })
-    await interaction.reply({ content: 'Verification button inserted', flags: MessageFlags.Ephemeral })
   },
 }
 

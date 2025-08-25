@@ -61,6 +61,27 @@ export const data: Command = {
 
     } else if (subcommand === 'user') {
       const targetUser = interaction.options.getUser('target', true)
+
+      if (!targetUser) {
+        const errorEmbed = new EmbedBuilder()
+          .setColor(0xFF0000)
+          .setTitle('Error')
+          .setDescription('Invalid user specified.')
+          .setTimestamp()
+        await interaction.reply({ embeds: [errorEmbed], ephemeral: true })
+        return
+      }
+
+      if (targetUser.bot) {
+        const errorEmbed = new EmbedBuilder()
+          .setColor(0xFF0000)
+          .setTitle('Error')
+          .setDescription('Bots don\'t earn points!')
+          .setTimestamp()
+        await interaction.reply({ embeds: [errorEmbed], ephemeral: true })
+        return
+      }
+
       const user = await pointsService.getUser(targetUser.id)
 
       const embed = new EmbedBuilder()
@@ -81,7 +102,11 @@ export const data: Command = {
 
     } else if (subcommand === 'leaderboard') {
       const limit = interaction.options.getInteger('limit') ?? 10
-      const leaderboard = await pointsService.getLeaderboard(limit)
+
+      // Additional validation for the limit (though Discord should handle this)
+      const sanitizedLimit = Math.max(1, Math.min(25, limit))
+
+      const leaderboard = await pointsService.getLeaderboard(sanitizedLimit)
 
       const embed = new EmbedBuilder()
         .setColor(0xFFD700)
@@ -94,14 +119,28 @@ export const data: Command = {
         const leaderboardText = leaderboard
           .map((user, index) => {
             const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`
-            return `${medal} **${user.name}** - ${user.points} points`
+            // Escape user names to prevent Discord markdown injection
+            const safeName = user.name.replace(/[*_`~|\\]/g, '\\$&')
+            return `${medal} **${safeName}** - ${user.points.toLocaleString()} points`
           })
           .join('\n')
 
         embed.setDescription(leaderboardText)
+
+        if (sanitizedLimit !== limit) {
+          embed.setFooter({ text: `Showing top ${sanitizedLimit} users` })
+        }
       }
 
       await interaction.reply({ embeds: [embed] })
+    } else {
+      // Handle unexpected subcommands
+      const errorEmbed = new EmbedBuilder()
+        .setColor(0xFF0000)
+        .setTitle('Error')
+        .setDescription('Unknown subcommand.')
+        .setTimestamp()
+      await interaction.reply({ embeds: [errorEmbed], ephemeral: true })
     }
 
   } catch (error) {
@@ -113,7 +152,15 @@ export const data: Command = {
       .setDescription('An error occurred while processing your request. Please try again later.')
       .setTimestamp()
 
-    await interaction.reply({ embeds: [errorEmbed], ephemeral: true })
+    try {
+      if (interaction.replied || interaction.deferred) {
+        await interaction.editReply({ embeds: [errorEmbed] })
+      } else {
+        await interaction.reply({ embeds: [errorEmbed], ephemeral: true })
+      }
+    } catch (replyError) {
+      Logger.error('Failed to send error response:', replyError)
+    }
     }
   },
 }

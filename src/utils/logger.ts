@@ -43,8 +43,8 @@ export class Logger {
 
     try {
       // Dynamically import env to avoid circular dependencies
-      const { default: getEnv } = await import('./env')
-      const env = getEnv()
+      const { getEnv } = await import('./env')
+      const env = await getEnv()
 
       const errorChannel = this.client.channels.cache.get(env.CHANNELS.ERROR) as TextChannel
 
