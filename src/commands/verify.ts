@@ -23,7 +23,10 @@ export const verify: Command = {
       const env = await getEnv()
       const verificationChannel = await interaction.client.channels.fetch(env.CHANNELS.VERIFICATION)
       if (!verificationChannel?.isSendable()) {
-        await interaction.reply({ content: 'Verification channel not found or bot cannot send messages there', flags: MessageFlags.Ephemeral })
+        await interaction.reply({
+          content: 'Verification channel not found or bot cannot send messages there',
+          flags: MessageFlags.Ephemeral,
+        })
         return
       }
 

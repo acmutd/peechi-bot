@@ -97,9 +97,12 @@ class ReportService {
 
   private startCleanupInterval(): void {
     // Clean up expired reports every 10 minutes
-    this.cleanupInterval = setInterval(() => {
-      this.cleanupExpiredReports()
-    }, 10 * 60 * 1000)
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanupExpiredReports()
+      },
+      10 * 60 * 1000,
+    )
   }
 
   getReportCount(): number {

@@ -62,7 +62,10 @@ export const verify: ButtonCommand = {
 
       // Validate name contains only allowed characters
       if (!/^[a-zA-Z0-9\s\-_.()]+$/.test(name)) {
-        await res.editReply({ content: 'Name contains invalid characters. Only letters, numbers, spaces, and basic punctuation are allowed.' })
+        await res.editReply({
+          content:
+            'Name contains invalid characters. Only letters, numbers, spaces, and basic punctuation are allowed.',
+        })
         return
       }
 
@@ -77,13 +80,17 @@ export const verify: ButtonCommand = {
         // Check bot permissions
         const botMember = interaction.guild?.members.me
         if (!botMember?.permissions.has(['ManageRoles', 'ManageNicknames'])) {
-          await res.editReply({ content: 'Bot lacks necessary permissions to complete verification. Please contact a moderator.' })
+          await res.editReply({
+            content: 'Bot lacks necessary permissions to complete verification. Please contact a moderator.',
+          })
           return
         }
 
         // Check if bot can assign the role (role hierarchy)
         if (role.position >= botMember.roles.highest.position) {
-          await res.editReply({ content: 'Bot cannot assign the verification role due to role hierarchy. Please contact a moderator.' })
+          await res.editReply({
+            content: 'Bot cannot assign the verification role due to role hierarchy. Please contact a moderator.',
+          })
           return
         }
 
@@ -110,7 +117,10 @@ export const verify: ButtonCommand = {
       } catch (error) {
         Logger.error(`Error during verification for user ${user.id}:`, error)
         try {
-          await res.editReply({ content: 'An error occurred during verification. Please try again or contact a moderator if the issue persists.' })
+          await res.editReply({
+            content:
+              'An error occurred during verification. Please try again or contact a moderator if the issue persists.',
+          })
         } catch (editError) {
           Logger.error('Failed to edit reply after verification error:', editError)
         }
@@ -122,7 +132,10 @@ export const verify: ButtonCommand = {
           // Cannot respond anymore
           return
         }
-        await interaction.reply({ content: 'An unexpected error occurred. Please try again.', flags: MessageFlags.Ephemeral })
+        await interaction.reply({
+          content: 'An unexpected error occurred. Please try again.',
+          flags: MessageFlags.Ephemeral,
+        })
       } catch (replyError) {
         Logger.error('Failed to send error response:', replyError)
       }

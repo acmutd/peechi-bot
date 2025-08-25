@@ -172,9 +172,7 @@ import { SlashCommandBuilder } from 'discord.js'
 import type { Command } from '../types'
 
 export const myCommand: Command = {
-  data: new SlashCommandBuilder()
-    .setName('mycommand')
-    .setDescription('Description of my command'),
+  data: new SlashCommandBuilder().setName('mycommand').setDescription('Description of my command'),
   async execute(interaction) {
     await interaction.reply('Hello from my command!')
   },

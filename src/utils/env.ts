@@ -70,7 +70,6 @@ class EnvironmentService {
     }
   }
 
-
   async getEnv(): Promise<Env> {
     if (this._isInitialized && this._env) {
       return this._env

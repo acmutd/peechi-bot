@@ -4,7 +4,6 @@ import { EmbedBuilder, TextChannel } from 'discord.js'
 export class Logger {
   private static client: BotClient | null = null
 
-
   static setClient(client: BotClient) {
     this.client = client
   }

@@ -73,7 +73,7 @@ export class PointsService {
 
       const userRef = this.db.collection('users').doc(update.userId)
 
-      const result = await this.db.runTransaction(async (transaction) => {
+      const result = await this.db.runTransaction(async transaction => {
         const userDoc = await transaction.get(userRef)
 
         let userData: User
@@ -117,28 +117,28 @@ export class PointsService {
     userId: string,
     userName: string,
     messageContent: string,
-    channelId: string
+    channelId: string,
   ): Promise<{ pointsAwarded: number; reason: string }> {
     try {
       // Validate inputs
       if (!userId || typeof userId !== 'string') {
         return {
           pointsAwarded: 0,
-          reason: 'Invalid user ID'
+          reason: 'Invalid user ID',
         }
       }
 
       if (!userName || typeof userName !== 'string') {
         return {
           pointsAwarded: 0,
-          reason: 'Invalid user name'
+          reason: 'Invalid user name',
         }
       }
 
       if (!messageContent || typeof messageContent !== 'string') {
         return {
           pointsAwarded: 0,
-          reason: 'Invalid message content'
+          reason: 'Invalid message content',
         }
       }
 
@@ -150,7 +150,7 @@ export class PointsService {
           Logger.error(`Failed to create user ${userId}:`, createError)
           return {
             pointsAwarded: 0,
-            reason: 'Failed to create user profile'
+            reason: 'Failed to create user profile',
           }
         }
       }
@@ -160,31 +160,31 @@ export class PointsService {
       if (pointsToAdd === 0) {
         return {
           pointsAwarded: 0,
-          reason: 'Message too short or invalid'
+          reason: 'Message too short or invalid',
         }
       }
 
       const success = await this.updateUserPoints({
         userId,
-        pointsToAdd
+        pointsToAdd,
       })
 
       if (success) {
         return {
           pointsAwarded: pointsToAdd,
-          reason: `Awarded ${pointsToAdd} points for message`
+          reason: `Awarded ${pointsToAdd} points for message`,
         }
       } else {
         return {
           pointsAwarded: 0,
-          reason: 'Failed to update user points'
+          reason: 'Failed to update user points',
         }
       }
     } catch (error) {
       Logger.error(`Error processing message for user ${userId}:`, error)
       return {
         pointsAwarded: 0,
-        reason: 'Error processing message'
+        reason: 'Error processing message',
       }
     }
   }
@@ -209,11 +209,7 @@ export class PointsService {
         limit = 100
       }
 
-      const snapshot = await this.db
-        .collection('users')
-        .orderBy('points', 'desc')
-        .limit(limit)
-        .get()
+      const snapshot = await this.db.collection('users').orderBy('points', 'desc').limit(limit).get()
 
       const users: User[] = []
       snapshot.forEach(doc => {

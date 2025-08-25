@@ -28,7 +28,7 @@ export async function execute(message: Message) {
       message.author.id,
       message.author.displayName || message.author.username,
       message.content,
-      message.channel.id
+      message.channel.id,
     )
 
     // Log the result for debugging

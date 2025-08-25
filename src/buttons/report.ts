@@ -136,7 +136,13 @@ export const report: ButtonCommand = {
           name: `${authorMember?.displayName || message.author.username} (${message.author.username})`,
           iconURL: message.member?.displayAvatarURL() || message.author.displayAvatarURL(),
         })
-        .setDescription(message.content ? (message.content.length > 1000 ? message.content.substring(0, 997) + '...' : message.content) : '*No text content*')
+        .setDescription(
+          message.content
+            ? message.content.length > 1000
+              ? message.content.substring(0, 997) + '...'
+              : message.content
+            : '*No text content*',
+        )
         .setColor(0x34495e)
         .setTimestamp(message.createdTimestamp)
 
@@ -200,7 +206,6 @@ export const report: ButtonCommand = {
       } catch (error) {
         Logger.error('Failed to send confirmation message:', error)
       }
-
     } catch (error) {
       Logger.error('Error in report button handler:', error)
       try {

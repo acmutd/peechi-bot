@@ -9,7 +9,7 @@ class FirebaseService {
 
   constructor() {
     const app = this.initializeFirebase()
-    this.db = initializeFirestore(app, { preferRest: true})
+    this.db = initializeFirestore(app, { preferRest: true })
   }
 
   private initializeFirebase() {
@@ -20,7 +20,6 @@ class FirebaseService {
         credential: cert(serviceAccount),
         projectId: localEnv.FIRESTORE_PROJECT_ID,
       })
-
     } catch (error) {
       console.error('Error initializing Firebase:', error)
       throw error

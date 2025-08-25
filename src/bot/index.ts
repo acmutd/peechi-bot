@@ -125,7 +125,8 @@ export class DiscordBot {
    * Load all button handlers from the buttons directory
    */
   async loadButtons() {
-    const buttonsPath = localEnv.NODE_ENV === 'production' ? join(__dirname, '..', 'src', 'buttons') : join(__dirname, '..', 'buttons')
+    const buttonsPath =
+      localEnv.NODE_ENV === 'production' ? join(__dirname, '..', 'src', 'buttons') : join(__dirname, '..', 'buttons')
     const buttonFiles = readdirSync(buttonsPath).filter(file => file.endsWith('.ts'))
 
     for (const file of buttonFiles) {
