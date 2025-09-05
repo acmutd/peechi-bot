@@ -6,6 +6,8 @@ export const localEnvSchema = z.object({
   CLIENT_ID: z.string(),
   FIRESTORE_PROJECT_ID: z.string(),
   FIRESTORE_KEY_FILENAME: z.string(),
+  CALENDAR_API_KEY: z.string(),
+  CALENDAR_ID: z.string(),
   NODE_ENV: z.enum(['development', 'production']).default('development'),
 })
 
