@@ -126,7 +126,11 @@ export const verify: ButtonCommand = {
         }
       }
     } catch (error) {
-      Logger.error('Unexpected error in verify button handler:', error)
+      Logger.error('Unexpected error in verify button handler:', error, {
+        userId: interaction.user.id,
+        username: interaction.user.username,
+        channelId: interaction.channelId,
+      })
       try {
         if (interaction.replied || interaction.deferred) {
           // Cannot respond anymore
