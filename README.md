@@ -52,8 +52,8 @@ CLIENT_ID=your_discord_application_client_id
 FIRESTORE_PROJECT_ID=your_firebase_project_id
 FIRESTORE_KEY_FILENAME=path/to/your/firebase-service-account-key.json
 
-# Environment (this is defaulted to development)
-NODE_ENV=development
+CALENDAR_API_KEY=your_calendar_api_key
+CALENDAR_ID=you_know_what
 ```
 
 ### 2. Discord Bot Setup

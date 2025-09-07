@@ -1,4 +1,3 @@
-import { calendar_v3, google } from 'googleapis'
 import { getEnv } from '../utils/env'
 import { Logger } from '../utils/logger'
 import {
@@ -9,17 +8,17 @@ import {
 } from '../types/calendar'
 
 class CalendarService {
-  private calendar: calendar_v3.Calendar | null = null
+  private baseUrl = 'https://www.googleapis.com/calendar/v3'
+  private apiKey: string | null = null
 
   async initialize() {
-    if (this.calendar) return this.calendar
+    if (this.apiKey) return this.apiKey
 
     try {
       const env = await getEnv()
-
-      this.calendar = google.calendar({ version: 'v3', auth: env.CALENDAR_API_KEY })
+      this.apiKey = env.CALENDAR_API_KEY
       Logger.info('Google Calendar service initialized')
-      return this.calendar
+      return this.apiKey
     } catch (error) {
       Logger.error('Failed to initialize Google Calendar service:', error)
       throw new Error('Calendar service initialization failed')
@@ -28,23 +27,32 @@ class CalendarService {
 
   async getUpcomingEvents(maxResults: number): Promise<CalendarEvent[]> {
     try {
-      const calendar = await this.initialize()
+      const apiKey = await this.initialize()
       const env = await getEnv()
 
       const now = new Date()
       const oneMonthFromNow = new Date()
       oneMonthFromNow.setMonth(now.getMonth() + 1)
 
-      const response = await calendar.events.list({
-        calendarId: env.CALENDAR_ID,
+      const params = new URLSearchParams({
+        key: apiKey,
         timeMin: now.toISOString(),
         timeMax: oneMonthFromNow.toISOString(),
-        maxResults,
-        singleEvents: true,
+        maxResults: maxResults.toString(),
+        singleEvents: 'true',
         orderBy: 'startTime',
       })
 
-      const validatedResponse = googleCalendarEventsListSchema.parse(response.data)
+      const url = `${this.baseUrl}/calendars/${encodeURIComponent(env.CALENDAR_ID)}/events?${params}`
+
+      const response = await fetch(url)
+
+      if (!response.ok) {
+        throw new Error(`Google Calendar API error: ${response.status} ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      const validatedResponse = googleCalendarEventsListSchema.parse(data)
       const events = validatedResponse.items || []
 
       Logger.info(`Fetched ${events.length} events from Google Calendar`)
@@ -68,15 +76,26 @@ class CalendarService {
 
   async getEventById(eventId: string): Promise<CalendarEvent | null> {
     try {
-      const calendar = await this.initialize()
+      const apiKey = await this.initialize()
       const env = await getEnv()
 
-      const response = await calendar.events.get({
-        calendarId: env.CALENDAR_ID,
-        eventId,
+      const params = new URLSearchParams({
+        key: apiKey,
       })
 
-      const event = response.data
+      const url = `${this.baseUrl}/calendars/${encodeURIComponent(env.CALENDAR_ID)}/events/${encodeURIComponent(eventId)}?${params}`
+
+      const response = await fetch(url)
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          Logger.warn(`Calendar event ${eventId} not found`)
+          return null
+        }
+        throw new Error(`Google Calendar API error: ${response.status} ${response.statusText}`)
+      }
+
+      const event = await response.json()
       if (!event) return null
 
       // Validate and transform the event using Zod schema
