@@ -8,6 +8,7 @@ export const verify: ButtonCommand = {
   baseId: 'verify',
   execute: async interaction => {
     try {
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral })
       const user = interaction.user
       const member = interaction.guild?.members.cache.get(user.id)
 
@@ -21,7 +22,7 @@ export const verify: ButtonCommand = {
         const env = await getEnv()
         const verifiedRole = await interaction.guild?.roles.fetch(env.ROLES.VERIFIED)
         if (verifiedRole && member.roles.cache.has(verifiedRole.id)) {
-          await interaction.reply({ content: 'You are already verified!', flags: MessageFlags.Ephemeral })
+          await interaction.editReply({ content: 'You are already verified!' })
           return
         }
       } catch (error) {
@@ -51,18 +52,18 @@ export const verify: ButtonCommand = {
 
       // Validate name
       if (!name || name.length === 0) {
-        await res.editReply({ content: 'Name cannot be empty' })
+        await res.followUp({ content: 'Name cannot be empty' })
         return
       }
 
       if (name.length > 32) {
-        await res.editReply({ content: 'Name is too long (maximum 32 characters)' })
+        await res.followUp({ content: 'Name is too long (maximum 32 characters)' })
         return
       }
 
       // Validate name contains only allowed characters
       if (!/^[a-zA-Z0-9\s\-_.()]+$/.test(name)) {
-        await res.editReply({
+        await res.followUp({
           content:
             'Name contains invalid characters. Only letters, numbers, spaces, and basic punctuation are allowed.',
         })
@@ -73,14 +74,14 @@ export const verify: ButtonCommand = {
         const env = await getEnv()
         const role = await interaction.guild?.roles.fetch(env.ROLES.VERIFIED)
         if (!role) {
-          await res.editReply({ content: 'Verification role not found. Please contact a moderator.' })
+          await res.followUp({ content: 'Verification role not found. Please contact a moderator.' })
           return
         }
 
         // Check bot permissions
         const botMember = interaction.guild?.members.me
         if (!botMember?.permissions.has(['ManageRoles', 'ManageNicknames'])) {
-          await res.editReply({
+          await res.followUp({
             content: 'Bot lacks necessary permissions to complete verification. Please contact a moderator.',
           })
           return
@@ -88,7 +89,7 @@ export const verify: ButtonCommand = {
 
         // Check if bot can assign the role (role hierarchy)
         if (role.position >= botMember.roles.highest.position) {
-          await res.editReply({
+          await res.followUp({
             content: 'Bot cannot assign the verification role due to role hierarchy. Please contact a moderator.',
           })
           return
@@ -107,22 +108,21 @@ export const verify: ButtonCommand = {
           await member.setNickname(name)
         } catch (error) {
           Logger.warn(`Failed to set nickname for ${user.id}:`, error)
-          // Continue with role assignment even if nickname fails
         }
 
         // Add verified role
         await member.roles.add(role)
 
-        await res.editReply({ content: 'Verified successfully! You can now start earning points by chatting.' })
+        await res.followUp({ content: 'Verified successfully! You can now start earning points by chatting.' })
       } catch (error) {
         Logger.error(`Error during verification for user ${user.id}:`, error)
         try {
-          await res.editReply({
+          await res.followUp({
             content:
               'An error occurred during verification. Please try again or contact a moderator if the issue persists.',
           })
         } catch (editError) {
-          Logger.error('Failed to edit reply after verification error:', editError)
+          Logger.error('Failed to followup after verification error:', editError)
         }
       }
     } catch (error) {
@@ -136,7 +136,7 @@ export const verify: ButtonCommand = {
           // Cannot respond anymore
           return
         }
-        await interaction.reply({
+        await interaction.followUp({
           content: 'An unexpected error occurred. Please try again.',
           flags: MessageFlags.Ephemeral,
         })
