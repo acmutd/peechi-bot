@@ -51,12 +51,12 @@ export const verify: ButtonCommand = {
 
       // Validate name
       if (!name || name.length === 0) {
-        await res.followUp({ content: 'Name cannot be empty' })
+        await res.followUp({ content: 'Name cannot be empty', flags: MessageFlags.Ephemeral })
         return
       }
 
       if (name.length > 32) {
-        await res.followUp({ content: 'Name is too long (maximum 32 characters)' })
+        await res.followUp({ content: 'Name is too long (maximum 32 characters)', flags: MessageFlags.Ephemeral })
         return
       }
 
@@ -65,6 +65,7 @@ export const verify: ButtonCommand = {
         await res.followUp({
           content:
             'Name contains invalid characters. Only letters, numbers, spaces, and basic punctuation are allowed.',
+          flags: MessageFlags.Ephemeral,
         })
         return
       }
@@ -73,7 +74,10 @@ export const verify: ButtonCommand = {
         const env = await getEnv()
         const role = await interaction.guild?.roles.fetch(env.ROLES.VERIFIED)
         if (!role) {
-          await res.followUp({ content: 'Verification role not found. Please contact a moderator.' })
+          await res.followUp({
+            content: 'Verification role not found. Please contact a moderator.',
+            flags: MessageFlags.Ephemeral,
+          })
           return
         }
 
@@ -82,6 +86,7 @@ export const verify: ButtonCommand = {
         if (!botMember?.permissions.has(['ManageRoles', 'ManageNicknames'])) {
           await res.followUp({
             content: 'Bot lacks necessary permissions to complete verification. Please contact a moderator.',
+            flags: MessageFlags.Ephemeral,
           })
           return
         }
@@ -90,6 +95,7 @@ export const verify: ButtonCommand = {
         if (role.position >= botMember.roles.highest.position) {
           await res.followUp({
             content: 'Bot cannot assign the verification role due to role hierarchy. Please contact a moderator.',
+            flags: MessageFlags.Ephemeral,
           })
           return
         }
@@ -119,6 +125,7 @@ export const verify: ButtonCommand = {
           await res.followUp({
             content:
               'An error occurred during verification. Please try again or contact a moderator if the issue persists.',
+            flags: MessageFlags.Ephemeral,
           })
         } catch (editError) {
           Logger.error('Failed to followup after verification error:', editError)
