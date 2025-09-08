@@ -118,7 +118,10 @@ export const verify: ButtonCommand = {
         // Add verified role
         await member.roles.add(role)
 
-        await res.followUp({ content: 'Verified successfully! You can now start earning points by chatting.' })
+        await res.followUp({
+          content: 'Verified successfully! You can now start earning points by chatting.',
+          flags: MessageFlags.Ephemeral,
+        })
       } catch (error) {
         Logger.error(`Error during verification for user ${user.id}:`, error)
         try {
