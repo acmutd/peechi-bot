@@ -58,24 +58,25 @@ export const verify: Command = {
 
 function VerificationEmbed() {
   return new EmbedBuilder()
-    .setTitle('Verification')
-    .setDescription('Click the button below to verify')
+    .setTitle('Server Verification')
+    .setDescription('Click the button below to verify and gain access to all channels.')
+    .setColor(0x00d4aa)
     .addFields([
       {
         name: 'Instructions',
-        value: 'Click the button below and enter your first & last name',
-      },
-      {
-        name: 'Additional',
-        value: 'You can also enter your pronouns, just make sure the total message is less than 32 characters',
+        value: 'Enter your **first and last name** (and optionally pronouns)\nMax 32 characters total',
+        inline: false,
       },
     ])
+    .setFooter({
+      text: 'Need help? Drop a message in the verifcation help channel',
+    })
 }
 
 function VerificationButton() {
   return new ButtonBuilder({
     custom_id: 'verify',
-    label: 'Verify',
+    label: 'Verify Account',
     style: ButtonStyle.Success,
   })
 }

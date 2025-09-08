@@ -8,7 +8,6 @@ export const verify: ButtonCommand = {
   baseId: 'verify',
   execute: async interaction => {
     try {
-      await interaction.deferReply({ flags: MessageFlags.Ephemeral })
       const user = interaction.user
       const member = interaction.guild?.members.cache.get(user.id)
 
