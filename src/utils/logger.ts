@@ -85,11 +85,57 @@ export class Logger {
         }
       }
 
-      embed.addFields({
-        name: 'Environment',
-        value: `**Node ENV:** ${process.env.NODE_ENV || 'unknown'}\n**Process:** ${process.pid}`,
-        inline: true,
-      })
+      // Add user and channel context if available
+      if (args.length > 0) {
+        const contextObj = args.find(arg => arg && typeof arg === 'object' && !arg.stack)
+        if (contextObj) {
+          const userInfo = []
+          const locationInfo = []
+
+          if (contextObj.username || contextObj.userId) {
+            const displayName =
+              contextObj.userDisplayName && contextObj.userDisplayName !== contextObj.username
+                ? ` (${contextObj.userDisplayName})`
+                : ''
+            // Make user clickable with mention
+            const userMention = contextObj.userId ? `<@${contextObj.userId}>` : 'Unknown'
+            userInfo.push(`**User:** ${userMention} (${contextObj.username || 'Unknown'}${displayName})`)
+            userInfo.push(`**User ID:** ${contextObj.userId || 'Unknown'}`)
+          }
+
+          if (contextObj.channelId) {
+            locationInfo.push(`**Channel:** <#${contextObj.channelId}>`)
+          }
+
+          if (contextObj.commandName) {
+            locationInfo.push(`**Command:** ${contextObj.commandName}`)
+          }
+
+          if (contextObj.customId) {
+            locationInfo.push(`**Button ID:** ${contextObj.customId}`)
+          }
+
+          if (contextObj.interactionType) {
+            locationInfo.push(`**Type:** ${contextObj.interactionType}`)
+          }
+
+          if (userInfo.length > 0) {
+            embed.addFields({
+              name: 'User Information',
+              value: userInfo.join('\n'),
+              inline: true,
+            })
+          }
+
+          if (locationInfo.length > 0) {
+            embed.addFields({
+              name: 'Location & Context',
+              value: locationInfo.join('\n'),
+              inline: true,
+            })
+          }
+        }
+      }
 
       await errorChannel.send({ embeds: [embed] })
     } catch (discordError) {

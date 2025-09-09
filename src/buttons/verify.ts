@@ -21,7 +21,7 @@ export const verify: ButtonCommand = {
         const env = await getEnv()
         const verifiedRole = await interaction.guild?.roles.fetch(env.ROLES.VERIFIED)
         if (verifiedRole && member.roles.cache.has(verifiedRole.id)) {
-          await interaction.editReply({ content: 'You are already verified!' })
+          await interaction.reply({ content: 'You are already verified!', flags: MessageFlags.Ephemeral })
           return
         }
       } catch (error) {

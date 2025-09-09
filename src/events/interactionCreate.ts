@@ -40,8 +40,10 @@ async function handleContextMenu(interaction: BaseInteraction) {
       commandName: interaction.commandName,
       userId: interaction.user.id,
       username: interaction.user.username,
+      userDisplayName: interaction.user.displayName,
       guildId: interaction.guildId,
       channelId: interaction.channelId,
+      interactionType: 'Context Menu',
     })
     const reply: InteractionReplyOptions = {
       content: 'There was an error while executing this context menu!',
@@ -75,9 +77,11 @@ async function handleCommand(interaction: BaseInteraction) {
       commandName: interaction.commandName,
       userId: interaction.user.id,
       username: interaction.user.username,
+      userDisplayName: interaction.user.displayName,
       guildId: interaction.guildId,
       channelId: interaction.channelId,
       options: interaction.options.data,
+      interactionType: 'Slash Command',
     })
 
     const reply: InteractionReplyOptions = {
@@ -113,8 +117,10 @@ async function handleButton(interaction: BaseInteraction) {
       baseId,
       userId: interaction.user.id,
       username: interaction.user.username,
+      userDisplayName: interaction.user.displayName,
       guildId: interaction.guildId,
       channelId: interaction.channelId,
+      interactionType: 'Button',
     })
 
     const reply: InteractionReplyOptions = {
