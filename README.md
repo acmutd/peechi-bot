@@ -118,13 +118,7 @@ bun run dev
 
 ### Production
 
-1. **Build the project**
-
-   ```bash
-   bun run build
-   ```
-
-2. **Start the bot**
+1. **Start the bot**
 
    ```bash
    bun start
@@ -159,6 +153,9 @@ The bot includes several built-in commands:
 - `/ping` - Check bot responsiveness
 - `/verify` - User verification command
 - `/fail` - Testing/debugging command
+- `/recache` - Recache the environment variables
+- `/points` - Check your points or view the leaderboard
+- `/calendar-sync` - Sync Google Calendar events to Discord guild events
 
 ## Adding New Features
 

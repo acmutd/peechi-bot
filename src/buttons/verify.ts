@@ -44,7 +44,7 @@ export const verify: ButtonCommand = {
         return
       }
 
-      await res.reply({ content: 'Please wait while we verify your account', flags: MessageFlags.Ephemeral })
+      await res.deferReply({ flags: MessageFlags.Ephemeral })
 
       const name = res.fields.getTextInputValue('name').trim()
       const pronouns = res.fields.getTextInputValue('pronouns').trim()
@@ -81,7 +81,6 @@ export const verify: ButtonCommand = {
           return
         }
 
-        // Check bot permissions
         const botMember = interaction.guild?.members.me
         if (!botMember?.permissions.has(['ManageRoles', 'ManageNicknames'])) {
           await res.followUp({
