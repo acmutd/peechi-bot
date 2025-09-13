@@ -1,4 +1,4 @@
-import { Client, Collection, REST, Routes } from 'discord.js'
+import { Client, Collection, Events, REST, Routes } from 'discord.js'
 import { readdirSync } from 'fs'
 import { pathToFileURL } from 'url'
 import { join, dirname } from 'path'
@@ -64,6 +64,7 @@ export class DiscordBot {
    * Load all event handlers from the events directory
    */
   async loadEvents() {
+    const env = await getEnv()
     const eventsPath = join(__dirname, '..', 'events')
     const eventFiles = readdirSync(eventsPath).filter(file => file.endsWith('.ts'))
 
@@ -75,6 +76,9 @@ export class DiscordBot {
         if (eventModule.once) {
           this.client.once(eventModule.name, (...args) => eventModule.execute(...args))
         } else {
+          if (eventModule.name === Events.MessageCreate && env.DISABLE_POINTS) {
+            continue
+          }
           this.client.on(eventModule.name, (...args) => eventModule.execute(...args))
         }
 
