@@ -1,6 +1,7 @@
 import { Events, Message } from 'discord.js'
 import pointsService from '../db/pointsService'
 import { Logger } from '../utils/logger'
+import { getEnv } from '../utils/env'
 
 export const name = Events.MessageCreate
 
@@ -8,6 +9,10 @@ export async function execute(message: Message) {
   try {
     // Ignore bot messages
     if (message.author.bot) return
+
+    const env = await getEnv()
+
+    if (env.DISABLE_POINTS) return
 
     // Ignore messages without content (embeds, attachments only, etc.)
     if (!message.content || message.content.trim().length === 0) return

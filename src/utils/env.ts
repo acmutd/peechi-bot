@@ -9,6 +9,10 @@ export const localEnvSchema = z.object({
   CALENDAR_API_KEY: z.string(),
   CALENDAR_ID: z.string(),
   NODE_ENV: z.enum(['development', 'production']).default('development'),
+  DISABLE_POINTS: z
+    .string()
+    .default('false')
+    .transform(val => val === 'true'),
 })
 
 export const firebaseEnvSchema = z.object({
