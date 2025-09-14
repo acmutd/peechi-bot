@@ -8,6 +8,5 @@ export const BOT_INTENTS = [
   GatewayIntentBits.Guilds,
   GatewayIntentBits.GuildMessages,
   GatewayIntentBits.MessageContent,
-  GatewayIntentBits.GuildMembers,
   GatewayIntentBits.GuildScheduledEvents,
 ] as const
