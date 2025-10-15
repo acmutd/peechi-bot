@@ -99,6 +99,11 @@ export const report: ButtonCommand = {
             inline: true,
           },
           {
+            name: 'Reported By',
+            value: `${interaction.user.username} (<@${interaction.user.id}>)`,
+            inline: true,
+          },
+          {
             name: 'Channel',
             value: `<#${message.channel.id}>`,
             inline: true,
@@ -120,7 +125,7 @@ export const report: ButtonCommand = {
         )
         .setTimestamp()
         .setFooter({
-          text: 'Anonymous Report System',
+          text: 'Report System',
         })
 
       if (userReportMessage) {
